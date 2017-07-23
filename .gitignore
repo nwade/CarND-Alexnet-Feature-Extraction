@@ -4,3 +4,5 @@ bvlc-alexnet.npy
 train.p
 .vscode
 .idea
+vgg-100
+.DS_Store
