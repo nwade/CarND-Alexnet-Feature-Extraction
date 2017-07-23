@@ -12,6 +12,12 @@ with open('./train.p', 'rb') as f:
 # Split data into training and validation sets.
 X_train, X_val, y_train, y_val = train_test_split(data['features'], data['labels'], test_size=0.33, random_state=0)
 
+# Cut in quarters for laptop training
+X_train = X_train[:len(X_train)//4]
+y_train = y_train[:len(y_train)//4]
+X_val = X_val[:len(X_val)//4]
+y_val = y_val[:len(y_val)//4]
+
 # Define placeholders and resize operation.
 features = tf.placeholder(tf.float32, (None, 32, 32, 3))
 labels = tf.placeholder(tf.int64, None)
@@ -40,11 +46,13 @@ init_op = tf.global_variables_initializer()
 preds = tf.arg_max(logits, 1)
 accuracy_op = tf.reduce_mean(tf.cast(tf.equal(preds, labels), tf.float32))
 
-epochs = 10
-batch_size = 128
+epochs = 2
+batch_size = 512
 
 
 def eval_on_data(X, y, sess):
+    print("Trying to eval data...")
+    print("Total size: ", X.shape[0])
     total_acc = 0
     total_loss = 0
     for offset in range(0, X.shape[0], batch_size):
@@ -63,10 +71,13 @@ with tf.Session() as sess:
     sess.run(init_op)
 
     for i in range(epochs):
+        print("Running for epoch ", i)
         X_train, y_train = shuffle(X_train, y_train)
         t0 = time.time()
 
+        print("Total size: ", X_train.shape[0])
         for offset in range(0, X_train.shape[0], batch_size):
+            print("Running a batch...")
             end = offset + batch_size
             sess.run(train_op, feed_dict={features: X_train[offset:end], labels: y_train[offset:end]})
 
